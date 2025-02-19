@@ -1,0 +1,329 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int       @id @default(autoincrement()) @map("user_id")
+  username        String
+  firstName       String    // Added back
+  middleName      String?   // Added back
+  lastName        String    // Added back
+  email           String    @unique
+  phoneNumber     String?   @map("phone_number")
+  dateOfBirth     String    // Added back
+  gender          String    // Added back as String for flexibility
+  region          String    // Added back
+  province        String    // Added back
+  city            String    // Added back
+  barangay        String    // Added back
+  password        String
+  role            Role      @default(cadet)
+  studentNumber   String?   @unique  // Added back
+  course          String?   // Added back
+  yearLevel       String?   // Added back
+  section         String?   // Added back
+  platoon         String?   // Added back
+  cadetInfo       CadetInformation?
+  officerInfo     ROTCOfficer?
+  performances    Performance[]
+  violations      Violation[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  applications    Application[]
+  verificationToken  String?  // Add this line
+  isVerified         Boolean  @default(false) // Add this line
+  @@map("users")
+}
+
+enum Role {
+  cadet
+  rotc_officer
+  rotc_coordinator
+}
+
+model CadetInformation {
+  id              Int       @id @default(autoincrement()) @map("cadets_id")
+  userId          Int       @unique @map("user_id")
+  user            User      @relation(fields: [userId], references: [id])
+  firstName       String    @map("first_name")
+  lastName        String    @map("last_name")
+  dateOfBirth     DateTime  @map("date_of_birth")
+  gender          Gender
+  bloodType       BloodType @map("blood_type")
+  address         String?
+  contactNumber   String?   @map("contact_number")
+  enrollmentStatus Status   @default(active) @map("enrollment_status")
+  cadetRank       String    @default("cadet") @map("cadet_rank")
+  enrollmentDate  DateTime  @default(now()) @map("enrollment_date")
+  battalionId     Int?      @map("battalion_id")
+  battalion       BattalionGroup? @relation(fields: [battalionId], references: [id])
+  achievements    Achievement[]
+  attendances     Attendance[]
+  enrollments     Enrollment[]
+  grades          Grade[]
+  schedules       Schedule[]
+  scholarships    Scholarship[]
+  volunteers      Volunteer[]
+
+  @@map("cadets_information")
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum BloodType {
+  a
+  b
+  ab
+  o
+}
+
+enum Status {
+  active
+  inactive
+}
+
+model Achievement {
+  id              Int       @id @default(autoincrement()) @map("achievement_id")
+  cadetId         Int       @map("cadets_id")
+  cadet           CadetInformation @relation(fields: [cadetId], references: [id])
+  achievementType AchievementType @map("achievement_type")
+  achievementDate DateTime  @default(now()) @map("achievement_date")
+  description     String    @db.Text
+
+  @@map("achievement")
+}
+
+enum AchievementType {
+  promotion
+  award
+  recognition
+}
+
+model Attendance {
+  id          Int       @id @default(autoincrement()) @map("attendance_id")
+  cadetId     Int       @map("cadets_id")
+  cadet       CadetInformation @relation(fields: [cadetId], references: [id])
+  dateTime    DateTime  @default(now()) @map("date_time")
+  status      AttendanceStatus @default(present)
+  idNumber    String    @map("id_number")
+
+  @@map("attendance")
+}
+
+enum AttendanceStatus {
+  present
+  absent
+  late
+}
+
+model BattalionGroup {
+  id            Int       @id @default(autoincrement()) @map("battalion_id")
+  battalionName String    @map("battalion_name")
+  location      String?
+  commander     String?
+  cadets        CadetInformation[]
+  officers      ROTCOfficer[]
+
+  @@map("battalion_group")
+}
+
+model ROTCOfficer {
+  id          Int       @id @default(autoincrement()) @map("officer_id")
+  userId      Int       @unique @map("user_id")
+  user        User      @relation(fields: [userId], references: [id])
+  cadetRank   String    @map("cadet_rank")
+  unit        String?
+  battalionId Int?      @map("battalion_id")
+  battalion   BattalionGroup? @relation(fields: [battalionId], references: [id])
+
+  @@map("rotc_officer")
+}
+
+model Enrollment {
+  id              Int       @id @default(autoincrement()) @map("enrollment_id")
+  cadetId         Int       @map("cadets_id")
+  cadet           CadetInformation @relation(fields: [cadetId], references: [id])
+  courseName      String    @map("course_name")
+  semester        String
+  enrollmentDate  DateTime  @default(now()) @map("enrollment_date")
+  graduationPeriod String?  @map("graduation_period")
+  status          EnrollmentStatus @default(enrolled)
+
+  @@map("enrollment")
+}
+
+enum EnrollmentStatus {
+  enrolled
+  graduate
+  dropped
+}
+
+model Grade {
+  id          Int       @id @default(autoincrement()) @map("grade_id")
+  cadetId     Int       @map("cadets_id")
+  cadet       CadetInformation @relation(fields: [cadetId], references: [id])
+  subject     String
+  grade       Decimal   @db.Decimal(5,2)
+  semester    String
+
+  @@map("grade")
+}
+
+model Schedule {
+  id          Int       @id @default(autoincrement()) @map("schedule_id")
+  cadetId     Int       @map("cadets_id")
+  cadet       CadetInformation @relation(fields: [cadetId], references: [id])
+  eventDate   DateTime  @default(now()) @map("event_date")
+  eventTime   DateTime  @map("event_time")
+  location    String
+  eventType   EventType @map("event_type")
+
+  @@map("schedule")
+}
+
+enum EventType {
+  training
+  drill
+  exercise
+}
+
+model Scholarship {
+  id              Int       @id @default(autoincrement()) @map("scholarship_id")
+  cadetId         Int       @map("cadets_id")
+  cadet           CadetInformation @relation(fields: [cadetId], references: [id])
+  scholarshipName String    @map("scholarship_name")
+  amount          Decimal   @db.Decimal(10,2)
+  awardDate       DateTime  @default(now()) @map("award_date")
+  expiryDate      DateTime? @map("expiry_date")
+  status          ScholarshipStatus
+
+  @@map("scholarship")
+}
+
+enum ScholarshipStatus {
+  active
+  expired
+}
+
+model Volunteer {
+  id                Int       @id @default(autoincrement()) @map("volunteer_id")
+  cadetId           Int       @map("cadets_id")
+  cadet             CadetInformation @relation(fields: [cadetId], references: [id])
+  event             String
+  volunteerDate     DateTime  @default(now()) @map("volunteer_date")
+  hoursContributed  Int       @map("hours_contributed")
+
+  @@map("volunteer")
+}
+
+model Performance {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  activityId  Int
+  activity    Activity  @relation(fields: [activityId], references: [id])
+  score       Float
+  remarks     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("performances")
+}
+
+model Activity {
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String?       @db.Text
+  date         DateTime
+  type         String        // Practical, Written, Physical
+  maxScore     Float
+  performances Performance[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("activities")
+}
+
+model Violation {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  description String    @db.Text
+  date        DateTime
+  penalty     String?
+  status      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("violations")
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String   @db.Text
+  priority  String   // High, Medium, Low
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("announcements")
+}
+
+model Application {
+  id                  Int       @id @default(autoincrement()) @map("application_id")
+  userId              Int       @map("user_id")
+  user                User      @relation(fields: [userId], references: [id])
+  studentNo           String    @map("student_no")
+  ms                  String    
+  applicationDate     DateTime  @default(now()) @map("application_date")
+  lastName            String    @map("last_name")
+  firstName           String    @map("first_name")
+  middleName          String?   @map("middle_name")
+  region              String
+  province            String
+  city                String
+  barangay            String
+  phoneNumber         String    @map("phone_number")
+  course              String
+  school              String
+  religion            String
+  dateOfBirth         String    @map("date_of_birth")
+  placeOfBirth        String    @map("place_of_birth")
+  height              String
+  weight              String
+  complexion          String
+  bloodType           String    @map("blood_type")
+  father              String
+  fatherOccupation    String    @map("father_occupation")
+  mother              String
+  motherOccupation    String    @map("mother_occupation")
+  emergencyContact    String    @map("emergency_contact")
+  emergencyRelationship String  @map("emergency_relationship")
+  emergencyAddress    String    @map("emergency_address")
+  emergencyPhone      String    @map("emergency_phone")
+  militaryScience     String?   @map("military_science")
+  willingToAdvance    Boolean   @map("willing_to_advance")
+  profilePicture      String?   @map("profile_picture")
+  status              ApplicationStatus @default(pending)
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@map("applications")
+}
+
+enum ApplicationStatus {
+  pending
+  approved
+  rejected
+} 
