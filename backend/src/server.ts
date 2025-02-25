@@ -7,7 +7,7 @@ import productRoutes from './routes/product.routes';
 import categoryRoutes from './routes/category.routes';
 import userRoutes from './routes/userRoutes';
 import applicationRoutes from './routes/applicationRoutes';
-
+import announcementRoutes from './routes/announcements';
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -40,6 +40,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/users', userRoutes);
 
 app.use('/api/applications', applicationRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

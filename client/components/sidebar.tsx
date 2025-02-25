@@ -15,7 +15,8 @@ import {
   Heart,
   Clock,
   BoxIcon,
-  FileText
+  FileText,
+  Bell
 } from 'lucide-react';
 import { useStore } from '@/lib/mock-data';
 
@@ -38,6 +39,13 @@ const sidebarNavItems = [
     icon: FileText,
     roles: ['rotc_officer', 'rotc_coordinator']
   },
+  {
+    title: 'Announcement',
+    href: '/announcement',
+    icon: Bell,
+    roles: ['rotc_officer', 'rotc_coordinator']
+  },
+
   {
     title: 'User Management',
     href: '/user-management',

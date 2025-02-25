@@ -12,34 +12,35 @@ datasource db {
 
 model User {
   id              Int       @id @default(autoincrement()) @map("user_id")
-  username        String
-  firstName       String    // Added back
-  middleName      String?   // Added back
-  lastName        String    // Added back
+  username        String    @unique
   email           String    @unique
-  phoneNumber     String?   @map("phone_number")
-  dateOfBirth     String    // Added back
-  gender          String    // Added back as String for flexibility
-  region          String    // Added back
-  province        String    // Added back
-  city            String    // Added back
-  barangay        String    // Added back
   password        String
-  role            Role      @default(cadet)
-  studentNumber   String?   @unique  // Added back
-  course          String?   // Added back
-  yearLevel       String?   // Added back
-  section         String?   // Added back
-  platoon         String?   // Added back
+  firstName       String    @map("first_name")
+  middleName      String?   @map("middle_name")
+  lastName        String    @map("last_name")
+  phoneNumber     String    @map("phone_number")
+  dateOfBirth     String    @map("date_of_birth")
+  gender          String
+  region          String
+  province        String
+  city            String
+  barangay        String
+  role            String    @default("cadet")
+  studentNumber   String?   @map("student_number")
+  course          String?
+  yearLevel       String?   @map("year_level")
+  section         String?
+  platoon         String?
+  verificationToken String?   @map("verification_token")
+  isVerified      Boolean   @default(false) @map("is_verified")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
   cadetInfo       CadetInformation?
   officerInfo     ROTCOfficer?
-  performances    Performance[]
-  violations      Violation[]
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
   applications    Application[]
-  verificationToken  String?  // Add this line
-  isVerified         Boolean  @default(false) // Add this line
+  announcements   Announcement[]
+  performances     Performance[]
+  violations      Violation[]
   @@map("users")
 }
 
@@ -270,12 +271,15 @@ model Violation {
 }
 
 model Announcement {
-  id        String   @id @default(uuid())
-  title     String
-  content   String   @db.Text
-  priority  String   // High, Medium, Low
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String   @db.Text
+  priority    String?
+  imageUrl    String?
+  userId      Int      @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("announcements")
 }
